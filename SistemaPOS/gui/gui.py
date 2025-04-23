@@ -6,7 +6,7 @@ from tkinter import messagebox
 import pandas as pd
 
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend'))) ##llamar la carpeta backend bb
 
 from ventas import resumen_ventas
 from factura import generar_factura  # por ejemplo
@@ -53,8 +53,110 @@ def show_menu():
     
 # Funciones de acción para los botones
 def open_inventario():
-    # Llamar a la interfaz de inventario
-    messagebox.showinfo("Inventario", "Abrir control de inventario...")
+    # Limpiar la ventana
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    tk.Label(root, text="Control de Inventario", font=("Arial", 20), bg=color_fondo, fg=color_texto).pack(pady=20)
+
+    tab_control = ttk.Notebook(root)
+    tab_control.pack(expand=1, fill='both', padx=20, pady=10)
+
+    # Pestaña para agregar producto
+    tab_agregar = ttk.Frame(tab_control)
+    tab_control.add(tab_agregar, text='Agregar Producto')
+
+    def agregar():
+        try:
+            agregar_producto(
+                id_entry.get(),
+                nombre_entry.get(),
+                descripcion_entry.get(),
+                int(cantidad_entry.get()),
+                float(precio_entry.get())
+            )
+            messagebox.showinfo("Éxito", "Producto agregado correctamente.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    tk.Label(tab_agregar, text="ID:").pack()
+    id_entry = tk.Entry(tab_agregar)
+    id_entry.pack()
+
+    tk.Label(tab_agregar, text="Nombre:").pack()
+    nombre_entry = tk.Entry(tab_agregar)
+    nombre_entry.pack()
+
+    tk.Label(tab_agregar, text="Descripción:").pack()
+    descripcion_entry = tk.Entry(tab_agregar)
+    descripcion_entry.pack()
+
+    tk.Label(tab_agregar, text="Cantidad:").pack()
+    cantidad_entry = tk.Entry(tab_agregar)
+    cantidad_entry.pack()
+
+    tk.Label(tab_agregar, text="Precio Unitario:").pack()
+    precio_entry = tk.Entry(tab_agregar)
+    precio_entry.pack()
+
+    ttk.Button(tab_agregar, text="Agregar", command=agregar).pack(pady=10)
+
+    # Pestaña para retirar producto
+    tab_retirar = ttk.Frame(tab_control)
+    tab_control.add(tab_retirar, text='Retirar Producto')
+
+    def retirar():
+        try:
+            retirar_producto(retirar_id_entry.get(), int(retirar_cantidad_entry.get()))
+            messagebox.showinfo("Éxito", "Producto retirado correctamente.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    tk.Label(tab_retirar, text="ID Producto:").pack()
+    retirar_id_entry = tk.Entry(tab_retirar)
+    retirar_id_entry.pack()
+
+    tk.Label(tab_retirar, text="Cantidad a Retirar:").pack()
+    retirar_cantidad_entry = tk.Entry(tab_retirar)
+    retirar_cantidad_entry.pack()
+
+    ttk.Button(tab_retirar, text="Retirar", command=retirar).pack(pady=10)
+
+    # Pestaña para actualizar producto
+    tab_actualizar = ttk.Frame(tab_control)
+    tab_control.add(tab_actualizar, text='Actualizar Producto')
+
+    def actualizar():
+        try:
+            cantidad = nueva_cantidad_entry.get()
+            precio = nuevo_precio_entry.get()
+            actualizar_producto(
+                actualizar_id_entry.get(),
+                int(cantidad) if cantidad else None,
+                float(precio) if precio else None
+            )
+            messagebox.showinfo("Éxito", "Producto actualizado correctamente.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    tk.Label(tab_actualizar, text="ID Producto:").pack()
+    actualizar_id_entry = tk.Entry(tab_actualizar)
+    actualizar_id_entry.pack()
+
+    tk.Label(tab_actualizar, text="Nueva Cantidad:").pack()
+    nueva_cantidad_entry = tk.Entry(tab_actualizar)
+    nueva_cantidad_entry.pack()
+
+    tk.Label(tab_actualizar, text="Nuevo Precio:").pack()
+    nuevo_precio_entry = tk.Entry(tab_actualizar)
+    nuevo_precio_entry.pack()
+
+    ttk.Button(tab_actualizar, text="Actualizar", command=actualizar).pack(pady=10)
+
+    # Botón para volver al menú
+    ttk.Button(root, text="Volver al Menú", style="Custom.TButton", command=show_menu).pack(pady=20)
+
+    #messagebox.showinfo("Inventario", "Abrir control de inventario...")
 
 def generate_invoice():
     # Llamar a la interfaz de generación de factura
