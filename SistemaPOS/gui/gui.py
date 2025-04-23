@@ -6,6 +6,14 @@ from tkinter import messagebox
 import pandas as pd
 
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
+
+from ventas import resumen_ventas
+from factura import generar_factura  # por ejemplo
+from inventario import agregar_producto, retirar_producto, actualizar_producto
+from usuarios import login
+
+
 
 # Crear la ventana principal
 root = tk.Tk()
