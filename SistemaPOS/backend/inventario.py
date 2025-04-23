@@ -1,72 +1,57 @@
 import pandas as pd
+import os
 
-# Función para agregar un producto al inventario
-def agregar_producto(id_producto, nombre, descripcion, cantidad, precio_unitario):
-    # Verifica si el archivo CSV existe, si no lo crea
-    try:
-        df = pd.read_csv('data/inventario.csv')
-    except FileNotFoundError:
-        df = pd.DataFrame(columns=['id_producto', 'nombre', 'descripcion', 'cantidad', 'precio_unitario', 'estado'])
+archivo_inventario = os.path.join(os.path.dirname(__file__), '..', 'data', 'inventario.csv')
 
-    nuevo_producto = {
-        'id_producto': id_producto, 
-        'nombre': nombre, 
-        'descripcion': descripcion, 
-        'cantidad': cantidad, 
-        'precio_unitario': precio_unitario, 
-        'estado': 'activo'
-    }
-
-    # Usamos pd.concat para agregar el nuevo producto
-    df = pd.concat([df, pd.DataFrame([nuevo_producto])], ignore_index=True)
-    
-    df.to_csv('data/inventario.csv', index=False)
-    print(f"Producto {nombre} agregado al inventario.")
-
-# Función para retirar un producto del inventario
-def retirar_producto(id_producto, cantidad):
-    try:
-        df = pd.read_csv('data/inventario.csv')
-    except FileNotFoundError:
-        print("No se encontró el archivo de inventario.")
-        return
-    
-    producto = df[df['id_producto'] == id_producto]
-    
-    if producto.empty:
-        print("Producto no encontrado.")
-        return
-
-    cantidad_actual = producto['cantidad'].values[0]
-    if cantidad_actual >= cantidad:
-        # Actualizamos la cantidad del producto en lugar de agregarlo de nuevo
-        df.loc[df['id_producto'] == id_producto, 'cantidad'] -= cantidad
-        df.to_csv('data/inventario.csv', index=False)
-        print(f"Producto {id_producto} retirado. Nueva cantidad: {cantidad_actual - cantidad}")
+def leer_inventario():
+    if os.path.exists(archivo_inventario):
+        return pd.read_csv(archivo_inventario, dtype={'id_producto': str})
     else:
-        print("No hay suficiente stock para retirar.")
+        df = pd.DataFrame(columns=['id_producto', 'nombre', 'descripcion', 'cantidad', 'precio_unitario', 'estado'])
+        df.to_csv(archivo_inventario, index=False)
+        return df
 
-# Función para actualizar un producto
+def guardar_inventario(df):
+    df.to_csv(archivo_inventario, index=False)
+
+def agregar_producto(id_producto, nombre, descripcion, cantidad, precio_unitario):
+    df = leer_inventario()
+    id_producto = str(id_producto).strip()
+    if id_producto in df['id_producto'].astype(str).str.strip().values:
+        raise ValueError("El producto ya existe.")
+    nuevo = {
+        'id_producto': id_producto,
+        'nombre': nombre,
+        'descripcion': descripcion,
+        'cantidad': cantidad,
+        'precio_unitario': precio_unitario,
+        'estado': 'disponible'
+    }
+    df = pd.concat([df, pd.DataFrame([nuevo])], ignore_index=True)
+    guardar_inventario(df)
+
+def retirar_producto(id_producto, cantidad):
+    df = leer_inventario()
+    id_producto = str(id_producto).strip()
+    idx = df[df['id_producto'].astype(str).str.strip() == id_producto].index
+    if len(idx) == 0:
+        raise ValueError("Producto no encontrado.")
+    i = idx[0]
+    cantidad_actual = int(df.loc[i, 'cantidad'])
+    if cantidad > cantidad_actual:
+        raise ValueError("Cantidad insuficiente.")
+    df.loc[i, 'cantidad'] = cantidad_actual - cantidad
+    guardar_inventario(df)
+
 def actualizar_producto(id_producto, nueva_cantidad=None, nuevo_precio=None):
-    try:
-        df = pd.read_csv('data/inventario.csv')
-    except FileNotFoundError:
-        print("No se encontró el archivo de inventario.")
-        return
-    
-    # Verificar si el producto existe
-    if id_producto not in df['id_producto'].values:
-        print("Producto no encontrado.")
-        return
-
+    df = leer_inventario()
+    id_producto = str(id_producto).strip()
+    idx = df[df['id_producto'].astype(str).str.strip() == id_producto].index
+    if len(idx) == 0:
+        raise ValueError("Producto no encontrado.")
+    i = idx[0]
     if nueva_cantidad is not None:
-        # Actualizamos la cantidad
-        df.loc[df['id_producto'] == id_producto, 'cantidad'] = nueva_cantidad
-
+        df.loc[i, 'cantidad'] = nueva_cantidad
     if nuevo_precio is not None:
-        # Actualizamos el precio
-        df.loc[df['id_producto'] == id_producto, 'precio_unitario'] = nuevo_precio
-    
-    # Guardamos los cambios en el CSV
-    df.to_csv('data/inventario.csv', index=False)
-    print(f"Producto {id_producto} actualizado.")
+        df.loc[i, 'precio_unitario'] = nuevo_precio
+    guardar_inventario(df)
