@@ -1,6 +1,11 @@
+import sys
+import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+import pandas as pd
+
+
 
 # Crear la ventana principal
 root = tk.Tk()
@@ -31,9 +36,13 @@ def show_menu():
     btn_factura = ttk.Button(root, text="Generar Factura Electrónica", style="Custom.TButton", command=generate_invoice)
     btn_factura.pack(pady=10, ipadx=10, ipady=10, fill="x", padx=50)
 
+    btn_analisis = ttk.Button(root, text="Análisis de Ventas", style="Custom.TButton", command=mostrar_analisis)
+    btn_analisis.pack(pady=10, ipadx=10, ipady=10, fill="x", padx=50)
+
     btn_logout = ttk.Button(root, text="Cerrar Sesión", style="Custom.TButton", command=logout)
     btn_logout.pack(pady=10, ipadx=10, ipady=10, fill="x", padx=50)
 
+    
 # Funciones de acción para los botones
 def open_inventario():
     # Llamar a la interfaz de inventario
@@ -74,6 +83,7 @@ def show_login():
     login_button = ttk.Button(root, text="Iniciar Sesión", style="Custom.TButton", command=lambda: login(username_entry.get(), password_entry.get()))
     login_button.pack(pady=20, ipadx=10, ipady=10, fill="x", padx=50)
 
+
 # Función de autenticación (usuario y contraseña)
 def login(username, password):
     # Aquí deberíamos verificar las credenciales con el archivo CSV de usuarios
@@ -81,6 +91,10 @@ def login(username, password):
         show_menu()  # Mostrar menú si las credenciales son correctas
     else:
         messagebox.showerror("Error", "Usuario o contraseña incorrectos.")
+
+def mostrar_analisis():
+    resumen = resumen_ventas()
+    messagebox.showinfo("Análisis de Ventas", resumen)
 
 # Estilo de botones personalizados
 style = ttk.Style()
