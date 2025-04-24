@@ -20,6 +20,7 @@ from analisis import resumen_general
 from analisis import generar_pdf_analisis
 from ventas import cargar_datos_ventas
 from ventas import resumen_ventas
+from usuarios import login
 
 # Crear la ventana principal
 root = tk.Tk()
@@ -432,7 +433,6 @@ def mostrar_anterior_grafica():
 def logout():
     show_login()
 
-# Login
 def show_login():
     for widget in root.winfo_children():
         widget.destroy()
@@ -448,13 +448,22 @@ def show_login():
     password_entry.pack(pady=10, ipadx=5, ipady=5, fill="x", padx=50)
 
     def handle_login():
-        if username_entry.get() == "admin" and password_entry.get() == "admin123":
-            show_menu()
+        usuario = username_entry.get()
+        contrasena = password_entry.get()
+        
+        # Verificar si las credenciales son correctas
+        rol = login(usuario, contrasena)
+        if rol:  # Si el login es exitoso
+            if rol == 'ADMIN':
+                messagebox.showinfo("Bienvenido", f"Bienvenido {usuario} (Rol: {rol})")
+                show_menu()  # Llamar a la función que muestra el menú principal
+            else:
+                messagebox.showinfo("Bienvenido", f"Bienvenido {usuario} (Rol: {rol})")
+                show_menu()  # También puedes decidir redirigir según el rol
         else:
             messagebox.showerror("Error", "Usuario o contraseña incorrectos.")
 
     ttk.Button(root, text="Iniciar Sesión", style="Custom.TButton", command=handle_login).pack(pady=20, ipadx=10, ipady=10, fill="x", padx=50)
-
 def cerrar_aplicacion():
     root.quit()  # Termina el bucle principal de Tkinter
 

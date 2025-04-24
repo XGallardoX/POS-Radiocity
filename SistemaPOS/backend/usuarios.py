@@ -1,9 +1,12 @@
 import pandas as pd
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+USUARIOS_CSV = os.path.join(BASE_DIR, 'data', 'usuarios.csv')
 
 # Función para realizar login
 def login(usuario, contrasena):
     try:
-        df_usuarios = pd.read_csv('data/usuarios.csv')  # Archivo CSV con usuarios y contraseñas
+        df_usuarios = pd.read_csv(USUARIOS_CSV)  # Archivo CSV con usuarios y contraseñas
     except FileNotFoundError:
         print("No se encontró el archivo de usuarios.")
         return False
@@ -18,7 +21,3 @@ def login(usuario, contrasena):
     else:
         print("Contraseña incorrecta.")
         return False
-
-# Ejemplo de uso:
-# Suponiendo que el archivo 'usuarios.csv' contiene las columnas 'usuario', 'contrasena' y 'rol'
-#print(login('admin', 'admin123'))  # Debería devolver 'ADMIN' si es correcto
