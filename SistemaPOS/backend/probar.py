@@ -28,5 +28,5 @@ generar_factura(cliente, productos, total)
 from usuarios import login
 
 # Prueba de login
-rol = login('admin', 'admin123')  # Debería devolver 'ADMIN' si es correcto
-print(f"Rol del usuario: {rol}")
+#rol = login('admin', 'admin123')  # Debería devolver 'ADMIN' si es correcto
+#print(f"Rol del usuario: {rol}")

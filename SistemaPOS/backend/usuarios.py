@@ -21,4 +21,4 @@ def login(usuario, contrasena):
 
 # Ejemplo de uso:
 # Suponiendo que el archivo 'usuarios.csv' contiene las columnas 'usuario', 'contrasena' y 'rol'
-print(login('admin', 'admin123'))  # Debería devolver 'ADMIN' si es correcto
+#print(login('admin', 'admin123'))  # Debería devolver 'ADMIN' si es correcto

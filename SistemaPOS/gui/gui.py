@@ -12,6 +12,7 @@ from ventas import resumen_ventas
 from factura import generar_factura
 from inventario import agregar_producto, retirar_producto, actualizar_producto, leer_inventario
 from usuarios import login as verificar_login
+from compra import registrar_venta
 
 # Crear la ventana principal
 root = tk.Tk()
@@ -198,8 +199,14 @@ def open_ventas():
     def finalizar_venta():
         if not carrito:
             return messagebox.showwarning("Vacío", "No hay productos en el carrito.")
-        generar_factura(carrito)
-        messagebox.showinfo("Éxito", "Factura generada correctamente.")
+    
+        total = sum(item['subtotal'] for item in carrito)
+    
+        # Registrar venta
+        id_venta = registrar_venta(carrito, total)
+
+        # Aquí puedes luego llamar a generar_factura(carrito, total) si quieres generar PDF
+        messagebox.showinfo("Venta registrada", f"Venta {id_venta} finalizada.")
         carrito.clear()
         actualizar_carrito()
 
