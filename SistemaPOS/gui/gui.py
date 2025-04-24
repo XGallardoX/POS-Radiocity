@@ -1,18 +1,22 @@
 import sys
 import os
+import pandas as pd
 import tkinter as tk
+import matplotlib.pyplot as plt
 from tkinter import ttk
 from tkinter import messagebox
-import pandas as pd
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # Asegurar que se pueda importar desde la carpeta backend
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
 
-from ventas import resumen_ventas
 from factura import generar_factura
 from inventario import agregar_producto, retirar_producto, actualizar_producto, leer_inventario
 from usuarios import login as verificar_login
 from compra import registrar_venta
+from analisis import resumen_general
+from ventas import cargar_datos_ventas
+from ventas import resumen_ventas
 
 # Crear la ventana principal
 root = tk.Tk()
@@ -249,11 +253,61 @@ def generate_invoice():
 
 # Mostrar análisis de ventas
 def mostrar_analisis():
-    try:
-        resumen = resumen_ventas()
-        messagebox.showinfo("Análisis de Ventas", resumen)
-    except Exception as e:
-        messagebox.showerror("Error", str(e))
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    df = cargar_datos_ventas()
+    if df is None:
+        return messagebox.showerror("Error", "No hay datos disponibles para análisis.")
+
+    tk.Label(root, text="Análisis de Ventas", font=("Arial", 20), bg=color_fondo, fg=color_texto).pack(pady=10)
+
+    resumen = resumen_ventas()
+
+    text_widget = tk.Text(root, height=15, width=70, bg=color_fondo, fg=color_texto, font=("Courier", 11), borderwidth=0)
+    text_widget.insert(tk.END, resumen)
+    text_widget.config(state=tk.DISABLED)
+    text_widget.pack(pady=10)
+
+    ttk.Button(root, text="Ver Gráficas", style="Custom.TButton", command=mostrar_graficas).pack(pady=5)
+    ttk.Button(root, text="Volver al Menú", style="Custom.TButton", command=show_menu).pack(pady=5)
+
+def mostrar_graficas():
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    df = cargar_datos_ventas()
+    if df is None:
+        return messagebox.showerror("Error", "No hay datos disponibles para análisis.")
+
+    tk.Label(root, text="Gráficas de Ventas", font=("Arial", 20), bg=color_fondo, fg=color_texto).pack(pady=10)
+
+    frame_graficas = tk.Frame(root, bg=color_fondo)
+    frame_graficas.pack(fill='both', expand=True)
+
+    fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+
+    # Gráfico 1: Ingresos por producto
+    ingresos = df.groupby('nombre')['subtotal'].sum().sort_values(ascending=False)
+    axs[0].bar(ingresos.index, ingresos.values)
+    axs[0].set_title("Ingresos por Producto")
+    axs[0].tick_params(axis='x', rotation=45)
+
+    # Gráfico 2: Cantidad por producto
+    cantidades = df.groupby('nombre')['cantidad'].sum().sort_values(ascending=False)
+    axs[1].bar(cantidades.index, cantidades.values, color='orange')
+    axs[1].set_title("Unidades Vendidas por Producto")
+    axs[1].tick_params(axis='x', rotation=45)
+
+    fig.tight_layout()
+
+    canvas = FigureCanvasTkAgg(fig, master=frame_graficas)
+    canvas.draw()
+    canvas.get_tk_widget().pack(fill='both', expand=True)
+
+    ttk.Button(root, text="Volver al Análisis", style="Custom.TButton", command=mostrar_analisis).pack(pady=10)
+
+
 
 # Logout
 def logout():
