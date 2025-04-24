@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from tkinter import ttk
 from tkinter import messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 # Asegurar que se pueda importar desde la carpeta backend
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
@@ -15,6 +17,7 @@ from inventario import agregar_producto, retirar_producto, actualizar_producto, 
 from usuarios import login as verificar_login
 from compra import registrar_venta
 from analisis import resumen_general
+from analisis import generar_pdf_analisis
 from ventas import cargar_datos_ventas
 from ventas import resumen_ventas
 
@@ -251,7 +254,62 @@ def open_ventas():
 def generate_invoice():
     messagebox.showinfo("Factura", "Generar factura electrónica...")
 
-# Mostrar análisis de ventas
+def grafico_productos_mas_vendidos():
+    import matplotlib.pyplot as plt
+    from backend.ventas import resumen_ventas
+
+    resumen = resumen_ventas()
+    productos = resumen['Productos Más Vendidos']
+    
+    # Crear el gráfico
+    productos = dict(sorted(productos.items(), key=lambda item: item[1], reverse=True))
+    
+    plt.figure(figsize=(10, 6))
+    plt.bar(productos.keys(), productos.values(), color='lightblue')
+    plt.title('Productos Más Vendidos')
+    plt.xlabel('Producto')
+    plt.ylabel('Cantidad Vendida')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+def grafico_ingresos_por_dia():
+    import matplotlib.pyplot as plt
+    from backend.ventas import resumen_ventas
+
+    resumen = resumen_ventas()
+    ingresos = resumen['Ingresos por Día']
+    
+    # Crear el gráfico
+    fechas = list(ingresos.keys())
+    ingresos_dia = list(ingresos.values())
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(fechas, ingresos_dia, marker='o', color='green')
+    plt.title('Ingresos por Día')
+    plt.xlabel('Fecha')
+    plt.ylabel('Ingreso ($)')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+def grafico_promedio_diario():
+    import matplotlib.pyplot as plt
+    from backend.ventas import resumen_ventas
+
+    resumen = resumen_ventas()
+    promedio = resumen['Promedio Diario ($)']
+    
+    # Crear el gráfico
+    plt.figure(figsize=(5, 5))
+    plt.bar(['Promedio Diario'], [promedio], color='orange')
+    plt.title('Promedio Diario de Ventas')
+    plt.ylabel('Promedio ($)')
+    plt.tight_layout()
+    plt.show()
+
+
+# Función para mostrar análisis de ventas
 def mostrar_analisis():
     for widget in root.winfo_children():
         widget.destroy()
@@ -269,43 +327,104 @@ def mostrar_analisis():
     text_widget.config(state=tk.DISABLED)
     text_widget.pack(pady=10)
 
+    # Botón para generar el PDF de análisis
+    ttk.Button(root, text="Generar PDF de Análisis", style="Custom.TButton", command=generar_pdf_analisis).pack(pady=5)
+
     ttk.Button(root, text="Ver Gráficas", style="Custom.TButton", command=mostrar_graficas).pack(pady=5)
     ttk.Button(root, text="Volver al Menú", style="Custom.TButton", command=show_menu).pack(pady=5)
 
+
+# Variable global para manejar la gráfica actual
+indice_grafica = 0
+
+# Función de mostrar gráficas
 def mostrar_graficas():
+    global indice_grafica
+    
     for widget in root.winfo_children():
         widget.destroy()
 
     df = cargar_datos_ventas()
     if df is None:
         return messagebox.showerror("Error", "No hay datos disponibles para análisis.")
-
+    
     tk.Label(root, text="Gráficas de Ventas", font=("Arial", 20), bg=color_fondo, fg=color_texto).pack(pady=10)
 
+    # Frame para las gráficas
     frame_graficas = tk.Frame(root, bg=color_fondo)
     frame_graficas.pack(fill='both', expand=True)
 
-    fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+    # Crear la figura para las gráficas
+    fig, axs = plt.subplots(1, 1, figsize=(10, 4))
 
-    # Gráfico 1: Ingresos por producto
-    ingresos = df.groupby('nombre')['subtotal'].sum().sort_values(ascending=False)
-    axs[0].bar(ingresos.index, ingresos.values)
-    axs[0].set_title("Ingresos por Producto")
-    axs[0].tick_params(axis='x', rotation=45)
+    if indice_grafica == 0:
+        # Gráfico 1: Ingresos por producto
+        ingresos = df.groupby('nombre')['subtotal'].sum().sort_values(ascending=False)
+        axs.bar(ingresos.index, ingresos.values)
+        axs.set_title("Ingresos por Producto")
+        axs.tick_params(axis='x', rotation=45)
 
-    # Gráfico 2: Cantidad por producto
-    cantidades = df.groupby('nombre')['cantidad'].sum().sort_values(ascending=False)
-    axs[1].bar(cantidades.index, cantidades.values, color='orange')
-    axs[1].set_title("Unidades Vendidas por Producto")
-    axs[1].tick_params(axis='x', rotation=45)
+    elif indice_grafica == 1:
+        # Gráfico 2: Unidades vendidas por producto
+        cantidades = df.groupby('nombre')['cantidad'].sum().sort_values(ascending=False)
+        axs.bar(cantidades.index, cantidades.values, color='orange')
+        axs.set_title("Unidades Vendidas por Producto")
+        axs.tick_params(axis='x', rotation=45)
+
+    elif indice_grafica == 2:
+        # Gráfico 3: Productos más vendidos
+        productos_ventas = df.groupby('nombre')['cantidad'].sum().sort_values(ascending=False)
+        axs.bar(productos_ventas.index, productos_ventas.values)
+        axs.set_title("Productos Más Vendidos")
+        axs.tick_params(axis='x', rotation=45)
+
+    elif indice_grafica == 3:
+        # Gráfico 4: Ingresos por día
+        ingresos_dia = df.groupby(df['fecha'].dt.date)['subtotal'].sum()
+        axs.plot(ingresos_dia.index, ingresos_dia.values, marker='o', color='green')
+        axs.set_title("Ingresos por Día")
+        axs.set_xlabel("Fecha")
+        axs.set_ylabel("Ingreso ($)")
+
+    elif indice_grafica == 4:
+        # Gráfico 5: Promedio Diario
+        total_ventas = df["subtotal"].sum()
+        promedio_diario = df.groupby(df["fecha"].dt.date)["subtotal"].sum().mean()
+        axs.pie([promedio_diario, total_ventas - promedio_diario], 
+                labels=["Promedio Diario", "Otros"], autopct='%1.1f%%', colors=['yellow', 'lightgray'])
+        axs.set_title("Distribución del Promedio Diario")
 
     fig.tight_layout()
 
+    # Canvas para la gráfica
     canvas = FigureCanvasTkAgg(fig, master=frame_graficas)
     canvas.draw()
     canvas.get_tk_widget().pack(fill='both', expand=True)
 
+    # Botón "Anterior" para regresar a la gráfica anterior
+    if indice_grafica > 0:
+        ttk.Button(root, text="Anterior", style="Custom.TButton", command=mostrar_anterior_grafica).pack(pady=10)
+    
+    # Botón "Siguiente" para avanzar a la siguiente gráfica
+    if indice_grafica < 4:
+        ttk.Button(root, text="Siguiente", style="Custom.TButton", command=mostrar_siguiente_grafica).pack(pady=10)
+    
+    # Botón "Volver al Análisis"
     ttk.Button(root, text="Volver al Análisis", style="Custom.TButton", command=mostrar_analisis).pack(pady=10)
+
+# Función para manejar el clic en "Siguiente"
+def mostrar_siguiente_grafica():
+    global indice_grafica
+    indice_grafica += 1
+    mostrar_graficas()  # Llamamos a la función de gráficas nuevamente para mostrar la siguiente gráfica
+
+# Función para manejar el clic en "Anterior"
+def mostrar_anterior_grafica():
+    global indice_grafica
+    indice_grafica -= 1
+    mostrar_graficas()  # Llamamos a la función de gráficas nuevamente para mostrar la gráfica anterior
+
+
 
 
 
@@ -335,6 +454,12 @@ def show_login():
             messagebox.showerror("Error", "Usuario o contraseña incorrectos.")
 
     ttk.Button(root, text="Iniciar Sesión", style="Custom.TButton", command=handle_login).pack(pady=20, ipadx=10, ipady=10, fill="x", padx=50)
+
+def cerrar_aplicacion():
+    root.quit()  # Termina el bucle principal de Tkinter
+
+# Agregar este código antes de entrar en el bucle principal
+root.protocol("WM_DELETE_WINDOW", cerrar_aplicacion)
 
 # Estilo personalizado
 style = ttk.Style()
