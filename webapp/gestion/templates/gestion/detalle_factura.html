@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Factura {{ factura.id }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body { font-family: Arial; max-width: 700px; margin: auto; }
+        h1 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        .total { font-weight: bold; }
+        /* Estilo para el botón de volver para que esté en la parte superior y a la izquierda */
+        .top-buttons {
+            display: flex;
+            justify-content: space-between; /* Para separar los botones de volver y descargar */
+            align-items: center;
+            margin-bottom: 20px; /* Espacio después de los botones */
+        }
+        .top-buttons .boton {
+            margin-right: 10px; /* Espacio entre botones si hay varios a la izquierda */
+        }
+    </style>
+</head>
+<body>
+    <div class="top-buttons">
+        <a href="{% url 'ventas_panel' %}"><button class="boton">← Volver al panel de ventas</button></a>
+        <a href="{% url 'factura_pdf' factura.id %}" class="boton">Descargar en PDF</a>
+    </div>
+
+    <h1>Factura {{ factura.id }}</h1>
+    <p><strong>Fecha:</strong> {{ factura.fecha_emision }} {{ factura.hora_emision|time:"H:i" }}</p>
+    <p><strong>Cliente:</strong> {{ factura.cliente|default:"Consumidor Final" }}</p>
+    <p><strong>Empleado:</strong> {{ factura.empleado }}</p>
+    <p><strong>Método de Pago:</strong> {{ factura.tipo_pago }}</p>
+
+    <h2>Detalle de Productos</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in factura.detalles.all %}
+            <tr>
+                <td>{{ item.producto.nombre }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>${{ item.precio_unitario|floatformat:2 }}</td>
+                <td>${{ item.total_item|floatformat:2 }}</td> {# Correcto: Requiere item.total_item property en DetalleFactura #}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="total">Subtotal: ${{ factura.subtotal|floatformat:2 }}</p>
+    <p class="total">Base Gravable: ${{ factura.base_gravable|floatformat:2 }}</p>
+    <p class="total">Impuesto ({{ factura.tipo_impuesto.nombre }}): ${{ factura.impuesto_calculado|floatformat:2 }}</p> {# Correcto: Requiere factura.impuesto_calculado property en Factura #}
+    <p class="total">Propina: ${{ factura.propina|floatformat:2 }}</p>
+    <p class="total">Total: ${{ factura.total|floatformat:2 }}</p>
+    <p class="total">Recibido: ${{ factura.recibido|floatformat:2 }}</p>
+    <p class="total">Cambio: ${{ factura.cambio_calculado|floatformat:2 }}</p> {# Correcto: Requiere factura.cambio_calculado property en Factura #}
+
+</body>
+</html>

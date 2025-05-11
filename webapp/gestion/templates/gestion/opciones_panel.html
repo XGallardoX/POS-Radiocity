@@ -1,0 +1,37 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Opciones</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script>
+        function habilitarEdicion() {
+            document.getElementById("prefijo").removeAttribute("readonly");
+            document.getElementById("btnGuardar").style.display = "inline";
+            document.getElementById("btnEditar").style.display = "none";
+        }
+    </script>
+</head>
+<body>
+    <h1>Panel de Opciones</h1>
+
+    <a href="{% url 'panel_admin' %}"><button class="boton">Volver al Panel</button></a>
+
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="POST" style="margin-top: 20px;">
+        {% csrf_token %}
+        <label for="prefijo">Prefijo de facturas:</label>
+        <input type="text" id="prefijo" name="prefijo" value="{{ configuracion.prefijo|default:'' }}" readonly>
+        <button type="button" class="boton" id="btnEditar" onclick="habilitarEdicion()">Editar</button>
+        <button type="submit" class="boton" id="btnGuardar" style="display:none;">Guardar</button>
+    </form>
+</body>
+</html>

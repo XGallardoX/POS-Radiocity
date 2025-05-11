@@ -1,0 +1,34 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Modificar Producto</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h1>Modificar Producto</h1>
+        <a href="{% url 'inventario_panel' %}" class="boton">Volver</a> {# <--- Modificado aquí #}
+    <br><br>     <form method="post">
+        {% csrf_token %}
+
+        <label for="nombre">Nombre:</label>
+        <input type="text" name="nombre" id="nombre" value="{{ producto.nombre }}" required>
+
+        <label for="precio">Precio:</label>
+        <input type="number" step="0.01" name="precio" id="precio" value="{{ producto.precio }}" required>
+
+        <label for="stock">Stock disponible:</label>
+        <input type="number" name="stock" id="stock" min="0" value="{{ producto.stock }}" required>
+
+        <label for="cantidad_medida">Cantidad por unidad:</label>
+        <input type="number" name="cantidad_medida" id="cantidad_medida" min="1" value="{{ producto.cantidad_medida }}" required>
+
+        <label for="unidad_medida">Unidad de medida:</label>
+        <input type="text" name="unidad_medida" id="unidad_medida" value="{{ producto.unidad_medida }}" required>
+
+        <br><br>
+        <button type="submit">Guardar Cambios</button>
+    </form>
+</body>
+</html>

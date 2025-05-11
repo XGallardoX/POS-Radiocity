@@ -1,0 +1,252 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrar Venta</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h1>Registrar Venta</h1>
+    <a href="{% url 'ventas_panel' %}"><button class="boton">Cancelar</button></a>
+    
+    <form method="post" class="form-venta"> {# Agregada la clase form-venta aquí #}
+        {% csrf_token %}
+
+        <div class="form-field-group">
+            <label for="cliente">Cliente:</label>
+            <select name="cliente" id="cliente">
+                <option value="">-- Sin cliente --</option>
+                {% for cliente in clientes %}
+                    <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-field-group">
+            <label for="empleado">Empleado:</label>
+            <select name="empleado" id="empleado" required>
+                <option value="">-- Seleccione --</option>
+                {% for empleado in empleados %}
+                    <option value="{{ empleado.id }}">{{ empleado.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-field-group">
+            <label for="tipo_pago">Tipo de Pago:</label>
+            <select name="tipo_pago" id="tipo_pago" required onchange="verificarTipoPago()">
+                <option value="">-- Seleccione --</option>
+                {% for tipo in tipos_pago %}
+                    <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-field-group">
+            <label for="tipo_impuesto">Tipo de Impuesto:</label>
+            <select name="tipo_impuesto" id="tipo_impuesto" required onchange="actualizarTotal()">
+                {% for impuesto in impuestos %}
+                    <option value="{{ impuesto.id }}">{{ impuesto.nombre }} ({{ impuesto.impuesto }}%)</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <hr>
+        <h2>Productos</h2>
+        <div id="productos-container">
+            <div class="producto">
+                <select name="producto" class="producto-select">
+                    {% for producto in productos %}
+                        <option value="{{ producto.id }}" data-precio="{{ producto.precio }}" data-stock="{{ producto.stock }}">
+                            {{ producto.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <input type="number" name="cantidad" placeholder="Cantidad" min="1" required>
+                <span class="precio-texto">Precio: $<span class="precio-valor">0.00</span></span>
+                <span class="advertencia-stock" style="color:red; display:none;">Cantidad supera el stock disponible.</span>
+                <button type="button" onclick="eliminarProducto(this)" class="btn-eliminar" style="display:none;">Eliminar</button>
+            </div>
+        </div>
+        <button type="button" onclick="agregarProducto()">Agregar otro producto</button>
+
+        <hr>
+        <div class="form-field-group"> {# Propina también en un grupo #}
+            <label for="propina">Propina:</label>
+            <input type="number" step="0.01" name="propina" value="0.00" oninput="actualizarTotal()">
+        </div>
+
+        <div id="recibido-container" style="display:none;"> {# Este contenedor ocupa todo el ancho, pero su contenido interno se agrupa #}
+            <div class="form-field-group">
+                <label for="recibido">Valor Recibido:</label>
+                <input type="number" step="0.01" name="recibido" value="0.00">
+            </div>
+        </div>
+
+        <h3>Subtotal: $<span id="subtotal">0.00</span></h3>
+        <h3>Total estimado: $<span id="total-estimado">0.00</span></h3>
+
+        <button type="submit" id="btn-registrar">Registrar Venta</button>
+    </form>
+
+    <script>
+        function agregarProducto() {
+            const container = document.getElementById('productos-container');
+            const productoOriginal = container.firstElementChild;
+            const productoHTML = productoOriginal.cloneNode(true);
+
+            const select = productoHTML.querySelector('select');
+            const inputCantidad = productoHTML.querySelector('input[name="cantidad"]');
+            const precioSpan = productoHTML.querySelector('.precio-valor');
+            const btnEliminar = productoHTML.querySelector('.btn-eliminar');
+            const advertencia = productoHTML.querySelector('.advertencia-stock');
+
+            select.selectedIndex = 0;
+            inputCantidad.value = '';
+            precioSpan.innerText = '0.00';
+            advertencia.style.display = 'none';
+
+            select.addEventListener('change', function () {
+                mostrarPrecio(this);
+                actualizarTotal();
+            });
+
+            inputCantidad.addEventListener('input', () => {
+                verificarStock(inputCantidad);
+                actualizarTotal();
+            });
+
+            // Asegura que el botón de eliminar sea visible para los elementos recién añadidos
+            btnEliminar.style.display = 'inline-block'; 
+            container.appendChild(productoHTML);
+            mostrarPrecio(select);
+            actualizarTotal();
+
+            // Asegura que todos los botones de eliminar sean visibles si hay más de un producto
+            container.querySelectorAll('.btn-eliminar').forEach(btn => btn.style.display = 'inline-block');
+        }
+
+        function eliminarProducto(button) {
+            const container = document.getElementById('productos-container');
+            if (container.children.length > 1) { // Permite eliminar solo si hay más de una fila de producto
+                button.parentElement.remove();
+                actualizarTotal();
+            }
+            // Si solo queda un producto, oculta su botón de eliminar
+            if (container.children.length === 1) {
+                container.firstElementChild.querySelector('.btn-eliminar').style.display = 'none';
+            }
+        }
+
+        function mostrarPrecio(select) {
+            const precio = select.selectedOptions[0]?.dataset.precio || '0.00'; // Uso de optional chaining para evitar errores si no hay option
+            select.closest('.producto').querySelector('.precio-valor').innerText = parseFloat(precio).toFixed(2);
+        }
+
+        function verificarStock(input) {
+            const div = input.closest('.producto');
+            const select = div.querySelector('select');
+            const stock = parseInt(select.selectedOptions[0]?.dataset.stock || '0'); // Uso de optional chaining
+            const cantidad = parseInt(input.value) || 0;
+            const advertencia = div.querySelector('.advertencia-stock');
+
+            if (cantidad > stock) {
+                advertencia.style.display = 'inline';
+            } else {
+                advertencia.style.display = 'none';
+            }
+
+            verificarAdvertencias();
+        }
+
+        function verificarAdvertencias() {
+            const advertencias = document.querySelectorAll('.advertencia-stock');
+            const btnRegistrar = document.getElementById('btn-registrar');
+            let hayError = false;
+
+            advertencias.forEach(span => {
+                if (span.style.display !== 'none') {
+                    hayError = true;
+                }
+            });
+
+            btnRegistrar.disabled = hayError;
+        }
+
+        function actualizarTotal() {
+            let subtotal = 0.0;
+
+            document.querySelectorAll('#productos-container .producto').forEach(div => {
+                const select = div.querySelector('select');
+                const cantidadInput = div.querySelector('input[name="cantidad"]');
+                const cantidad = parseInt(cantidadInput.value) || 0;
+                const precio = parseFloat(select.selectedOptions[0]?.dataset.precio || '0.00'); // Uso de optional chaining
+
+                verificarStock(cantidadInput);
+                subtotal += cantidad * precio;
+            });
+
+            const impuestoSelect = document.getElementById('tipo_impuesto');
+            // Asegura que impuestoSelect.options[impuestoSelect.selectedIndex] no sea null
+            const impuestoTexto = impuestoSelect.options[impuestoSelect.selectedIndex]?.textContent;
+            const impuestoPorcentaje = parseFloat(impuestoTexto?.match(/(\d+(\.\d+)?)/)?.[0] || '0');
+            const impuestoDecimal = impuestoPorcentaje / 100.0;
+
+            const propina = parseFloat(document.querySelector('input[name="propina"]').value) || 0.0;
+            const total = subtotal + (subtotal * impuestoDecimal) + propina;
+
+            document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+            document.getElementById('total-estimado').innerText = total.toFixed(2);
+
+            verificarAdvertencias();
+        }
+
+        function verificarTipoPago() {
+            const tipoPago = document.getElementById('tipo_pago');
+            const valorSeleccionado = tipoPago.options[tipoPago.selectedIndex]?.textContent.toLowerCase(); // Uso de optional chaining
+            const containerRecibido = document.getElementById('recibido-container');
+
+            if (valorSeleccionado && valorSeleccionado.includes('efectivo')) { // Verifica que valorSeleccionado no sea null
+                containerRecibido.style.display = 'block';
+            } else {
+                containerRecibido.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar precios y stock en los productos existentes
+            document.querySelectorAll('.producto-select').forEach(select => {
+                mostrarPrecio(select); // Mostrar el precio inicial del producto seleccionado
+                select.addEventListener('change', function () {
+                    mostrarPrecio(this);
+                    actualizarTotal();
+                });
+            });
+
+            document.querySelectorAll('input[name="cantidad"]').forEach(input => {
+                input.addEventListener('input', () => {
+                    verificarStock(input);
+                    actualizarTotal();
+                });
+            });
+
+            document.getElementById('tipo_impuesto').addEventListener('change', actualizarTotal);
+            document.querySelector('input[name="propina"]').addEventListener('input', actualizarTotal);
+            document.getElementById('tipo_pago').addEventListener('change', verificarTipoPago);
+
+            // Control inicial de visibilidad del botón de eliminar
+            const container = document.getElementById('productos-container');
+            if (container.children.length === 1) {
+                container.firstElementChild.querySelector('.btn-eliminar').style.display = 'none';
+            } else {
+                container.querySelectorAll('.btn-eliminar').forEach(btn => btn.style.display = 'inline-block');
+            }
+
+            // Ejecutar estas funciones al cargar la página para asegurar el estado inicial correcto
+            actualizarTotal();
+            verificarTipoPago(); // Para ocultar/mostrar el campo de "Valor Recibido"
+        });
+    </script>
+</body>
+</html>

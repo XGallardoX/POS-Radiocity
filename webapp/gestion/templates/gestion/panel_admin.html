@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administración</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h1>Bienvenido al Panel de Administración</h1>
+
+    {# Enlaces de navegación existentes - ESTOS DEBEN IR PRIMERO #}
+    <ul>
+        <li><a href="{% url 'ventas_panel' %}">Ventas</a></li>
+        <li><a href="{% url 'compras_panel' %}">Compras</a></li>
+        <li><a href="{% url 'empleados_panel' %}">Empleados</a></li>
+        <li><a href="{% url 'inventario_panel' %}">Inventario</a></li>
+        <li><a href="{% url 'opciones_panel' %}">Opciones</a></li>
+        {# Enlace a Streamlit - Asegúrate de que esta URL es correcta para tu despliegue de Streamlit #}
+        <li><a href="http://localhost:8501" target="_blank">Resumen (Análisis de Datos)</a></li>
+        <li><a href="{% url 'admin:index' %}" target="_blank">Panel de Administración de Django</a></li>
+        {# Botón de Cerrar Sesión #}
+        <li>
+            <a href="{% url 'logout' %}" id="logout-link">
+                <button class="boton">🔒 Cerrar sesión</button>
+            </a>
+        </li>
+    </ul>
+
+    <hr> {# Opcional: una línea divisoria si quieres separar la navegación de los paneles #}
+
+    {# Sección de Ventas Totales Hoy #}
+    <div class="panel-section">
+        <h2>Ventas Totales del Día de Hoy</h2>
+        <p>Total recaudado hoy: <span class="highlight-number">${{ ventas_hoy_admin|floatformat:2 }}</span></p>
+    </div>
+
+    <br> {# Salto de línea para separar secciones, puedes usar CSS para esto #}
+
+    {# Sección de Stock Bajo #}
+    <div class="panel-section">
+        <h2>Productos con Stock Bajo</h2>
+        {% if productos_bajo_stock %}
+            <p>Los siguientes productos tienen menos de 10 unidades en stock:</p>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Stock Actual</th>
+                        <th>Unidad</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos_bajo_stock %}
+                        <tr>
+                            <td>{{ producto.nombre }}</td>
+                            <td>{{ producto.stock }}</td>
+                            <td>{{ producto.unidad_medida }}</td>
+                            <td><a href="{% url 'modificar_producto' producto.id %}" class="boton-pequeno">Modificar Stock</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Todos los productos tienen stock suficiente. ¡Excelente!</p>
+        {% endif %}
+    </div>
+
+    <script>
+        // Script para la confirmación de cerrar sesión
+        document.getElementById('logout-link').addEventListener('click', function(event) {
+            if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

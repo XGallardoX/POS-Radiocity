@@ -1,0 +1,40 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Empleados</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h1>Panel de Empleados</h1>
+    <a href="{% url 'panel_admin' %}"><button>Volver al Panel</button></a>
+
+    <a href="{% url 'registrar_empleado' %}" class="boton">Registrar Nuevo Empleado</a>
+
+    <form method="get" style="margin-top: 20px;">
+        <label for="id">Buscar por ID:</label>
+        <input type="number" name="id" id="id" value="{{ query_id }}" placeholder="Ej. 1">
+        <button type="submit" class="boton">Buscar</button>
+        {% if query_id %}
+            <a href="{% url 'listar_empleados' %}" class="boton" style="background-color: grey;">Limpiar</a>
+        {% endif %}
+    </form>
+
+    {% if empleados %}
+        <h2>Lista de Empleados</h2>
+        {% for empleado in empleados %}
+        <div class="empleado">
+            <strong>ID: {{ empleado.id }} - {{ empleado.nombre }} {{ empleado.apellido }}</strong><br>
+            Celular: {{ empleado.celular }}<br>
+            Estado: {% if empleado.estado %}Activo{% else %}Inactivo{% endif %}
+            <div class="acciones">
+                <a href="{% url 'modificar_empleado' empleado.id %}" class="boton">Modificar</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay empleados registrados{% if query_id %} con ese ID{% endif %}.</p>
+    {% endif %}
+</body>
+</html>

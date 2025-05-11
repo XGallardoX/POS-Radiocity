@@ -1,0 +1,455 @@
+/* static/css/style.css */
+
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0; /* Establecemos el padding del body en 0 para que .login ocupe todo el espacio */
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+h1, h2 {
+    color: #0056b3; /* Un azul institucional */
+    border-bottom: 2px solid #0056b3;
+    padding-bottom: 10px;
+    margin-top: 20px;
+}
+
+/* Estilos para el menú de administración */
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+ul li {
+    display: inline-block; /* Para que los elementos estén en línea */
+    margin-right: 15px;
+}
+
+ul li a {
+    text-decoration: none;
+    color: #007bff; /* Azul de enlace */
+    font-weight: bold;
+}
+
+ul li a:hover {
+    text-decoration: underline;
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: #ccc;
+    margin: 30px 0;
+}
+
+/* Estilos para los botones */
+.boton, button {
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    color: #fff;
+    background-color: #007bff; /* Azul por defecto */
+    border: none;
+    border-radius: 5px;
+    margin: 5px 0; /* Pequeño margen vertical */
+    transition: background-color 0.3s ease;
+}
+
+.boton:hover, button:hover {
+    background-color: #0056b3; /* Azul más oscuro al pasar el ratón */
+}
+
+/* Colores específicos para botones de acción */
+.boton.rojo, button.rojo {
+    background-color: #dc3545; /* Rojo para "Anular" */
+}
+
+.boton.rojo:hover, button.rojo:hover {
+    background-color: #c82333;
+}
+
+.boton.verde, button.verde {
+    background-color: #28a745; /* Verde para "Validar" */
+}
+
+.boton.verde:hover, button.verde:hover {
+    background-color: #218838;
+}
+
+.boton[style*="background-color: grey;"],
+button[style*="background-color: grey;"] {
+    background-color: #6c757d !important; /* Gris para "Limpiar" (usando !important para sobrescribir estilo inline) */
+}
+
+.boton[style*="background-color: grey;"]:hover,
+button[style*="background-color: grey;"]:hover {
+    background-color: #5a6268 !important;
+}
+
+
+/* Estilos generales para formularios (como el de búsqueda) */
+form {
+    background-color: #e9ecef; /* Fondo gris claro */
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex; /* Para alinear elementos del formulario (ej. búsqueda) */
+    align-items: center;
+    gap: 10px; /* Espacio entre elementos */
+}
+
+form label {
+    font-weight: bold;
+}
+
+form input[type="number"],
+form input[type="text"],
+form input[type="password"], /* Aseguramos que el password también reciba estos estilos generales */
+form select { /* Incluimos select para estilos generales */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex-grow: 1; /* El input puede crecer para llenar espacio */
+    max-width: 200px; /* Límite de ancho para el input de ID (si lo tienes) */
+    box-sizing: border-box; /* Importante para que padding y border no sumen al ancho total */
+}
+
+
+/* Estilos para mensajes (messages) */
+ul li.success {
+    color: #155724; /* Verde oscuro */
+    background-color: #d4edda; /* Verde claro */
+    border-color: #c3e6cb;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    list-style: none; /* Eliminar viñetas */
+}
+
+ul li.error {
+    color: #721c24; /* Rojo oscuro */
+    background-color: #f8d7da; /* Rojo claro */
+    border-color: #f5c6cb;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    list-style: none; /* Eliminar viñetas */
+}
+
+ul li.info {
+    color: #004085; /* Azul oscuro */
+    background-color: #cce5ff; /* Azul claro */
+    border-color: #b8daff;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    list-style: none; /* Eliminar viñetas */
+}
+
+
+/* Estilos para cada elemento de venta */
+.venta {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+
+.venta strong {
+    color: #0056b3;
+}
+
+.venta .acciones {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+/* Estilos para los spans de estado */
+.anulado {
+    color: #dc3545; /* Rojo */
+    font-weight: bold;
+}
+
+.activo {
+    color: #28a745; /* Verde */
+    font-weight: bold;
+}
+
+/* Estilo para la paginación si la añades después */
+.pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.pagination a, .pagination span {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 0 4px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #007bff;
+}
+
+.pagination a:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination .current {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+
+/* --- ESTILOS ESPECÍFICOS PARA EL FORMULARIO DE LOGIN --- */
+
+/* Contenedor principal del login que centra el formulario en la página */
+.login {
+    height: 100vh; /* Ocupa toda la altura de la ventana */
+    display: flex;
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center;     /* Centra verticalmente */
+    background-color: #f4f4f4; /* Fondo específico para la página de login */
+}
+
+/* La "caja" del formulario de login */
+.login-container {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Título del formulario de login */
+.login-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #0056b3;
+    border-bottom: 2px solid #0056b3;
+    padding-bottom: 10px;
+    margin-top: 0; /* Elimina el margen superior de la regla h2 general */
+}
+
+/* Sobreescribir la regla general 'form' para el formulario de login */
+.login-container form {
+    display: block; /* ¡IMPORTANTE! Anula el 'display: flex' de la regla general de form para que los campos se apilen */
+    background-color: transparent; /* Elimina el fondo gris claro de la regla general de form */
+    padding: 0; /* Elimina el padding de la regla general de form */
+    border-radius: 0; /* Elimina el border-radius de la regla general de form */
+    margin-bottom: 0; /* Elimina el margin-bottom de la regla general de form */
+    gap: 0; /* Elimina el gap de la regla general de form */
+}
+
+
+/* Grupo de label e input para mejor espaciado */
+.login-container .form-group {
+    margin-bottom: 15px;
+    text-align: left; /* Alinea las etiquetas y campos a la izquierda dentro del grupo */
+}
+
+/* Etiquetas de usuario y contraseña */
+.login-container label {
+    display: block; /* Hace que la etiqueta ocupe su propia línea */
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* REGLA CLAVE: Estilo para los campos de texto y CONTRASEÑA dentro del login */
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* ¡CRUCIAL! Asegura que padding y border no sumen al ancho total */
+
+    /* --- AJUSTES ADICIONALES PARA FORZAR CONSISTENCIA, ESPECIALMENTE EN CAMPO DE CONTRASEÑA --- */
+    font-family: sans-serif; /* Fuerza la misma fuente */
+    font-size: 16px; /* Fuerza el mismo tamaño de fuente */
+    line-height: 1.5; /* Fuerza el mismo espaciado de línea */
+    height: auto; /* Asegura que no hay una altura fija predeterminada del navegador */
+    -webkit-appearance: none; /* Para resetear estilos específicos de WebKit (Chrome, Safari) */
+    -moz-appearance: none;    /* Para resetear estilos específicos de Mozilla (Firefox) */
+    appearance: none;         /* Estándar para resetear estilos de elementos de formulario */
+    /* Si el problema persiste, probar con background-color: white; */
+
+    margin-bottom: 0; /* Ya lo maneja .form-group */
+    flex-grow: unset; /* Anula flex-grow de la regla general de input */
+    max-width: unset; /* Anula max-width de la regla general de input */
+}
+
+/* Botón de "Ingresar" en el formulario de login */
+.login-container button {
+    width: 100%;
+    padding: 12px; /* Ajustado para un botón más grande */
+    font-size: 18px; /* Ajustado para un botón más grande */
+    margin-top: 20px; /* Espacio superior */
+    /* Combinamos con los estilos de .boton, button */
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.login-container button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para mensajes de error en el login */
+.error-message {
+    color: #dc3545;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    text-align: center;
+}
+/* Nuevo estilo para el formulario de registro de venta */
+.form-venta {
+    display: grid; /* Usamos CSS Grid para una disposición más flexible */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Columnas responsivas, al menos 280px de ancho */
+    gap: 20px; /* Espacio entre celdas de la grilla */
+    background-color: #fff; /* Fondo blanco para el formulario de venta */
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    max-width: 900px; /* Limitar el ancho máximo del formulario */
+    margin: 20px auto; /* Centrar el formulario en la página */
+}
+
+/* Estilos para agrupar label e input/select verticalmente */
+.form-field-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-venta label {
+    font-weight: bold;
+    margin-bottom: 5px; /* Espacio entre el label y el input/select */
+    display: block; /* Asegura que la etiqueta ocupe su propia línea */
+}
+
+.form-venta input[type="number"],
+.form-venta select {
+    width: 100%; /* Hacer que los inputs y selects ocupen el 100% del espacio de su celda */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-bottom: 0; /* El gap del grid maneja el espacio entre grupos */
+}
+
+
+/* Para que los elementos que no son pares label/input (o form-field-group) ocupen todo el ancho */
+.form-venta hr,
+.form-venta h2,
+.form-venta button[type="button"], /* Botón "Agregar otro producto" */
+.form-venta h3,
+.form-venta button[type="submit"], /* Botón "Registrar Venta" */
+.form-venta div#recibido-container {
+    grid-column: 1 / -1; /* Ocupan todo el ancho disponible */
+}
+
+/* Estilos específicos para la sección de productos */
+.form-venta #productos-container {
+    grid-column: 1 / -1; /* Contenedor de productos ocupa todo el ancho */
+    display: flex;
+    flex-direction: column; /* Apila los productos verticalmente */
+    gap: 15px; /* Espacio entre cada 'producto' div */
+}
+
+.form-venta .producto {
+    display: grid;
+    /* Ajusta los valores minmax según la longitud esperada del contenido y la compacidad deseada */
+    grid-template-columns: minmax(150px, 2fr) minmax(80px, 1fr) minmax(100px, 1.5fr) auto; /* Columnas para Select, Cantidad, Precio, Botón Eliminar */
+    gap: 10px;
+    align-items: center; /* Alinea verticalmente los elementos en la fila del producto */
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.form-venta .producto select,
+.form-venta .producto input[type="number"] {
+    margin-bottom: 0; /* Eliminar el margen inferior de los campos dentro del producto */
+}
+
+.form-venta .precio-texto {
+    white-space: nowrap; /* Evita que el texto del precio se rompa */
+    text-align: right; /* Alinea el precio a la derecha */
+}
+
+.form-venta .advertencia-stock {
+    grid-column: 1 / -1; /* Ocupa todo el ancho debajo del producto */
+    text-align: right; /* Alinea la advertencia a la derecha */
+    font-size: 0.9em;
+    margin-top: -5px; /* Pequeño ajuste para acercarlo al input */
+}
+
+.form-venta .btn-eliminar {
+    align-self: center; /* Centra el botón eliminar verticalmente */
+    padding: 8px 12px;
+    font-size: 14px;
+    background-color: #dc3545;
+    min-width: 80px; /* Asegura un tamaño mínimo para el botón */
+}
+
+.form-venta .btn-eliminar:hover {
+    background-color: #c82333;
+}
+
+/* Estilos para los títulos y totales */
+.form-venta h2 {
+    margin-top: 20px; /* Espacio sobre el título de la sección */
+    margin-bottom: 10px;
+    text-align: left; /* Alinea los títulos de sección a la izquierda */
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee; /* Separador sutil */
+}
+.form-venta h3 {
+    margin-top: 10px; /* Espacio sobre los totales */
+    margin-bottom: 5px;
+    text-align: right; /* Alinea los totales a la derecha */
+    font-size: 1.2em;
+    border-bottom: none; /* Sin borde inferior para los totales */
+}
+
+
+/* Ajustes para pantallas más pequeñas (responsive design) */
+@media (max-width: 768px) {
+    .form-venta {
+        grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
+        padding: 20px;
+        margin: 10px auto; /* Centrar y reducir márgenes */
+    }
+    .form-venta .producto {
+        grid-template-columns: 1fr; /* Una sola columna para los productos en pantallas pequeñas */
+        gap: 5px; /* Menos espacio entre elementos del producto */
+    }
+    .form-venta .advertencia-stock {
+        text-align: left; /* Alinea la advertencia a la izquierda en móviles */
+    }
+    .form-venta .precio-texto {
+        text-align: left; /* Alinea el precio a la izquierda en móviles */
+    }
+    .form-venta .btn-eliminar {
+        width: 100%; /* Botón eliminar ocupa todo el ancho en móviles */
+        min-width: unset;
+    }
+}

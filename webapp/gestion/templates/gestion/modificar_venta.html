@@ -1,0 +1,176 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Modificar Venta</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h1>Modificar Venta</h1>
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Cliente -->
+        <label for="cliente">Cliente:</label>
+        <select name="cliente" id="cliente">
+            <option value="">-- Sin cliente --</option>
+            {% for cliente in clientes %}
+                <option value="{{ cliente.id }}" {% if factura.cliente.id == cliente.id %}selected{% endif %}>{{ cliente.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Empleado -->
+        <label for="empleado">Empleado:</label>
+        <select name="empleado" id="empleado" required>
+            {% for empleado in empleados %}
+                <option value="{{ empleado.id }}" {% if factura.empleado.id == empleado.id %}selected{% endif %}>{{ empleado.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Tipo de impuesto -->
+        <label for="tipo_impuesto">Tipo de impuesto:</label>
+        <select name="tipo_impuesto" id="tipo_impuesto" required onchange="actualizarTotal()">
+            {% for impuesto in impuestos %}
+                <option value="{{ impuesto.id }}" {% if factura.tipo_impuesto.id == impuesto.id %}selected{% endif %}>
+                    {{ impuesto.nombre }} ({{ impuesto.impuesto }}%)
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- Tipo de pago -->
+        <label for="tipo_pago">Tipo de pago:</label>
+        <select name="tipo_pago" id="tipo_pago" required onchange="verificarTipoPago()">
+            {% for tipo in tipos_pago %}
+                <option value="{{ tipo.id }}" {% if factura.tipo_pago.id == tipo.id %}selected{% endif %}>
+                    {{ tipo.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <hr>
+        <h2>Productos</h2>
+        <div id="productos-container">
+            {% for detalle in detalles %}
+            <div class="producto">
+                <select name="producto[]" class="producto-select" onchange="mostrarPrecio(this)">
+                    {% for producto in productos %}
+                        <option value="{{ producto.id }}" data-precio="{{ producto.precio }}" {% if detalle.producto.id == producto.id %}selected{% endif %}>{{ producto.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <input type="number" name="cantidad[]" value="{{ detalle.cantidad }}" min="1" required oninput="actualizarTotal()">
+                <span class="precio-texto">Precio: $<span class="precio-valor">{{ detalle.producto.precio }}</span></span>
+                <button type="button" onclick="eliminarProducto(this)" class="btn-eliminar" {% if forloop.first %}style="display:none;"{% endif %}>Eliminar</button>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" onclick="agregarProducto()">Agregar otro producto</button>
+
+        <hr>
+        <label for="propina">Propina:</label>
+        <input type="number" step="0.01" name="propina" id="propina" value="{{ factura.propina }}" oninput="actualizarTotal()">
+
+        <div id="recibido-container" {% if factura.tipo_pago.nombre|lower != 'efectivo' %}style="display:none;"{% endif %}>
+            <label for="recibido">Valor recibido:</label>
+            <input type="number" step="0.01" name="recibido" id="recibido" value="{{ factura.recibido }}">
+        </div>
+
+        <h3>Subtotal: $<span id="subtotal">0.00</span></h3>
+        <h3>Total estimado: $<span id="total-estimado">0.00</span></h3>
+
+        <br><br>
+        <button type="submit">Guardar Cambios</button>
+    </form>
+
+    <script>
+        function agregarProducto() {
+            const container = document.getElementById('productos-container');
+            const productoOriginal = container.firstElementChild;
+            const productoHTML = productoOriginal.cloneNode(true);
+
+            productoHTML.querySelector('select').selectedIndex = 0;
+            productoHTML.querySelector('input[name="cantidad[]"]').value = '';
+            productoHTML.querySelector('.precio-valor').innerText = '0.00';
+            productoHTML.querySelector('.btn-eliminar').style.display = 'inline';
+
+            productoHTML.querySelector('.producto-select').addEventListener('change', function () {
+                mostrarPrecio(this);
+                actualizarTotal();
+            });
+
+            productoHTML.querySelector('input[name="cantidad[]"]').addEventListener('input', actualizarTotal);
+
+            container.appendChild(productoHTML);
+            actualizarTotal();
+        }
+
+        function eliminarProducto(button) {
+            const container = document.getElementById('productos-container');
+            if (container.children.length > 1) {
+                button.parentElement.remove();
+                actualizarTotal();
+            }
+        }
+
+        function mostrarPrecio(select) {
+            const precio = select.selectedOptions[0].dataset.precio || '0.00';
+            select.closest('.producto').querySelector('.precio-valor').innerText = parseFloat(precio).toFixed(2);
+            actualizarTotal();
+        }
+
+        function actualizarTotal() {
+            let subtotal = 0.0;
+
+            document.querySelectorAll('#productos-container .producto').forEach(div => {
+                const select = div.querySelector('select');
+                const cantidad = parseInt(div.querySelector('input[name="cantidad[]"]').value) || 0;
+                const precio = parseFloat(select.selectedOptions[0].dataset.precio || '0.00');
+                subtotal += cantidad * precio;
+            });
+
+            const impuestoSelect = document.getElementById('tipo_impuesto');
+            const impuestoTexto = impuestoSelect.options[impuestoSelect.selectedIndex]?.textContent;
+            const impuestoPorcentaje = parseFloat(impuestoTexto?.match(/(\d+(\.\d+)?)/)?.[0] || '0');
+            const impuestoDecimal = impuestoPorcentaje / 100.0;
+
+            const propina = parseFloat(document.getElementById('propina').value) || 0.0;
+            const total = subtotal + (subtotal * impuestoDecimal) + propina;
+
+            document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+            document.getElementById('total-estimado').innerText = total.toFixed(2);
+        }
+
+        function verificarTipoPago() {
+            const tipoPago = document.getElementById('tipo_pago');
+            const valorSeleccionado = tipoPago.options[tipoPago.selectedIndex]?.textContent.toLowerCase();
+            const containerRecibido = document.getElementById('recibido-container');
+
+            if (valorSeleccionado.includes('efectivo')) {
+                containerRecibido.style.display = 'block';
+            } else {
+                containerRecibido.style.display = 'none';
+            }
+        }
+
+        // Inicializar eventos
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.producto-select').forEach(select => {
+                select.addEventListener('change', function () {
+                    mostrarPrecio(this);
+                    actualizarTotal();
+                });
+            });
+
+            document.querySelectorAll('input[name="cantidad[]"]').forEach(input => {
+                input.addEventListener('input', actualizarTotal);
+            });
+
+            document.getElementById('tipo_pago').addEventListener('change', verificarTipoPago);
+            document.getElementById('tipo_impuesto').addEventListener('change', actualizarTotal);
+            document.getElementById('propina').addEventListener('input', actualizarTotal);
+
+            actualizarTotal();
+        });
+    </script>
+</body>
+</html>

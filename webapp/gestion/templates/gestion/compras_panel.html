@@ -1,0 +1,46 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Compras</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h1>Panel de Compras</h1>
+
+    {# Botones de acción principales del panel #}
+    <a href="{% url 'panel_admin' %}" class="boton">Volver al Panel</a>
+    <a href="{% url 'registrar_compra' %}" class="boton">Registrar Nueva Compra</a>
+
+    {# Formulario de búsqueda #}
+    <form method="get" style="margin-top: 20px;">
+        <label for="id">Buscar por ID:</label>
+        <input type="number" name="id" id="id" value="{{ query_id }}" placeholder="Ej. 1">
+        <button type="submit" class="boton">Buscar</button>
+        {% if query_id %}
+            <a href="{% url 'compras_panel' %}" class="boton" style="background-color: grey;">Limpiar</a>
+        {% endif %}
+    </form>
+
+    {% if compras %}
+        <h2>Historial de Compras</h2>
+        {# Iteración sobre cada compra, AHORA USANDO LA CLASE "venta" #}
+        {% for compra in compras %}
+            <div class="venta"> {# <-- ¡Cambio aquí! Usando la clase "venta" #}
+                <strong>Compra ID: {{ compra.id }}</strong><br>
+                Proveedor: {{ compra.proveedor|default:"N/A" }}<br>
+                Total: ${{ compra.total|floatformat:2 }}<br>
+                Fecha: {{ compra.fecha|date:"Y-m-d H:i" }}
+
+                <div class="acciones">
+                    <a href="{% url 'modificar_compra' compra.id %}" class="boton">Modificar</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay compras registradas{% if query_id %} con ese ID{% endif %}.</p>
+    {% endif %}
+</body>
+</html>

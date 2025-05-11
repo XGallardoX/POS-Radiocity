@@ -1,0 +1,55 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Inventario</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {# No necesitamos estilos adicionales aquí, la clase 'venta' de style.css se encargará #}
+</head>
+<body>
+    <h1>Panel de Inventario</h1>
+
+    {# Botones de acción principales del panel #}
+    <a href="{% url panel_url %}" class="boton">Volver al Panel</a>
+
+    {% if puede_editar %}
+        <a href="{% url 'registrar_producto' %}" class="boton">Registrar Nuevo Producto</a>
+    {% endif %}
+
+    {# Formulario de búsqueda #}
+    <form method="get" style="margin-top: 20px;">
+        <label for="nombre">Buscar por nombre:</label>
+        <input type="text" name="nombre" id="nombre" value="{{ query_nombre }}" placeholder="Ej. Arroz">
+        <button type="submit" class="boton">Buscar</button>
+        {% if query_nombre %}
+            <a href="{% url 'inventario_panel' %}" class="boton" style="background-color: grey;">Limpiar</a>
+        {% endif %}
+    </form>
+
+    {% if productos %}
+        <h2>Lista de Productos</h2>
+        {# Iteración sobre cada producto, usando la clase "venta" para el estilo de tarjeta #}
+        {% for producto in productos %}
+        <div class="venta"> {# Detalles del producto #}
+            <strong>{{ producto.nombre }}</strong><br>
+            Precio: ${{ producto.precio }}<br>
+            Stock actual: {{ producto.stock }}<br>
+            Cantidad por unidad: {{ producto.cantidad_medida }} {{ producto.unidad_medida }}
+
+            {# Bloque de acciones para el producto #}
+            <div class="acciones">
+                {# El botón "Ver Detalle" se ha eliminado como se solicitó #}
+
+                {# Botón "Modificar" visible solo si hay permisos de edición #}
+                {% if puede_editar %}
+                    <a href="{% url 'modificar_producto' producto.id %}" class="boton">Modificar</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay productos registrados{% if query_nombre %} con ese nombre{% endif %}.</p>
+    {% endif %}
+</body>
+</html>

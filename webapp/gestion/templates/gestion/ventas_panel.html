@@ -1,0 +1,63 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Ventas</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h1>Panel de Ventas</h1>
+    <a href="{% url panel_url %}"><button class="boton">Volver al Panel</button></a>
+    <a href="{% url 'registrar_venta' %}" class="boton">Registrar Nueva Venta</a>
+
+    <form method="get" style="margin-top: 20px;">
+        <label for="id">Buscar por ID:</label>
+        <input type="number" name="id" id="id" value="{{ query_id }}" placeholder="Ej. 1">
+        <button type="submit" class="boton">Buscar</button>
+        {% if query_id %}
+            <a href="{% url 'ventas_panel' %}" class="boton" style="background-color: grey;">Limpiar</a>
+        {% endif %}
+    </form>
+
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if ventas %}
+        <h2>Historial de Ventas</h2>
+        {% for venta in ventas %}
+        <div class="venta">
+            <strong>Venta #{{ configuracion.prefijo }}{{ venta.id }}</strong><br>
+            Cliente: {{ venta.cliente|default:"N/A" }}<br>
+            Empleado: {{ venta.empleado|default:"N/A" }}<br>
+            Total: ${{ venta.total }}<br>
+            Fecha: {{ venta.fecha_emision|date:"Y-m-d" }}<br>
+            Estado: 
+            {% if venta.anulado %}
+                <span class="anulado">Anulado</span>
+            {% else %}
+                <span class="activo">Activo</span>
+            {% endif %}
+
+            <div class="acciones">
+                <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="venta_id" value="{{ venta.id }}">
+                    <a href="{% url 'detalle_factura' venta.id %}" class="boton">Ver Detalle</a>
+                    <button type="submit" class="boton {% if venta.anulado %}verde{% else %}rojo{% endif %}">
+                        {% if venta.anulado %}Validar{% else %}Anular{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay ventas registradas{% if query_id %} con ese ID{% endif %}.</p>
+    {% endif %}
+</body>
+</html>
